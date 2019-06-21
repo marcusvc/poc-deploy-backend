@@ -3,10 +3,10 @@ const app = express();
 const PromiseFtp = require('promise-ftp');
 const fs = require('fs');
 const mongoose = require('mongoose');
-Distribuicao = require('./models/distribuicao-model');
 const bodyParser = require('body-parser');
+Distribuicao = require('./models/distribuicao-model');
 routes = require('./routes/distribuicao-routes');
-const distribuicaoParser = require('./controllers/distribuicao-parser');
+const distribuicaoCtrl = require('./controllers/distribuicao-controller');
 
 const port = process.env.PORT || 3000;
 const uri = process.env.MONGODB_URI || 'mongodb://localhost/distribuicao';
@@ -20,7 +20,8 @@ mongoose.connect(uri, {useNewUrlParser: true}, function(err){
 });
 
 var ftp = new PromiseFtp();
-ftp.connect({host: "10.3.9.1", user: "dg07876", password: "rostso01"})
+ftp.connect({host: "localhost", user: "marcus", password: "lyjum7"})
+//ftp.connect({host: "10.3.9.1", user: "dg07876", password: "rostso01"})
     .then(function (serverMessage) {
         console.log('Server message: '+serverMessage);
         return ftp.ascii();
@@ -35,14 +36,15 @@ ftp.connect({host: "10.3.9.1", user: "dg07876", password: "rostso01"})
     })
     .then(function (pwd) {
           console.log('Diretório atual: ' + pwd);
-          return ftp.get('S1110.DG07876.TESTE04');
+          //return ftp.get('S1110.DG07876.TESTE04');
+          return ftp.get('/srv/ftp/readme.local-copy.txt');
     })
     .then(function (stream) {
         return new Promise(function (resolve, reject) {
             stream.once('close', resolve);
             stream.once('error', reject);
-            stream.pipe(fs.createWriteStream('readme.local-copy.txt'));
-            distribuicaoParser.parseDistribuicao(stream);
+            //stream.pipe(fs.createWriteStream('readme.local-copy.txt'));
+            distribuicaoCtrl.parseDistribuicao(stream);
         });
     })
     .then(function () {
@@ -51,13 +53,12 @@ ftp.connect({host: "10.3.9.1", user: "dg07876", password: "rostso01"})
     .catch(function(err) {
         console.log("something went wrong: " + err);
     });
-
-app.get('/deploy', (req, res) => {
-    res.send('Hello World!');
-});
-
+    
+app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
+app.use(express.static(__dirname + '/public'));
+
 routes(app);
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));

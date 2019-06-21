@@ -4,6 +4,9 @@ var mongoose = require('mongoose');
 
 var Schema = mongoose.Schema;
 var distribuicaoSchema = new Schema({
+   logon: {
+      type: String
+   },
    nome: {
       type: String
    },
