@@ -30,21 +30,21 @@ ftp.connect({host: "localhost", user: "marcus", password: "lyjum7"})
         console.log('Alterado para ASCII');
         return ftp.cdup();
     })
-    .then(function (cdup) {
+    .then(function () {
         console.log('Subiu o nível do diretório atual');
         return ftp.pwd();
     })
-    .then(function (pwd) {
-          console.log('Diretório atual: ' + pwd);
+    .then(function (pwdResult) {
+          console.log('Diretório atual: ' + pwdResult);
           //return ftp.get('S1110.DG07876.TESTE04');
           return ftp.get('/srv/ftp/readme.local-copy.txt');
     })
-    .then(function (stream) {
+    .then(function (getResultStream) {
         return new Promise(function (resolve, reject) {
-            stream.once('close', resolve);
-            stream.once('error', reject);
+            getResultStream.once('close', resolve);
+            getResultStream.once('error', reject);
             //stream.pipe(fs.createWriteStream('readme.local-copy.txt'));
-            distribuicaoCtrl.parseDistribuicao(stream);
+            distribuicaoCtrl.parseDistribuicao(getResultStream);
         });
     })
     .then(function () {
