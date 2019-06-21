@@ -24,14 +24,13 @@ exports.parseDistribuicao = function (stream) {
       input: stream
    });
    var readNext;
-   var distribuicoes = [];
    var logon;
    rl.on('line', function (line) {
       if (readNext && (line.includes('*****') || line.includes('Number of'))) {
          readNext = false;
       } else if (readNext) {
          var distribuicao = parseLineIntoDistribuicao(line, logon);
-         distribuicoes.push(distribuicao);
+         save(distribuicao);
       } else if (!readNext && line.includes('--------')) {
          readNext = true;
       } else if (!readNext && line.includes('NEXT LOGON')) {
@@ -39,9 +38,8 @@ exports.parseDistribuicao = function (stream) {
       }
    }).on('close', function () {
       console.log('Stream closed...');
-      // FIXME: Não esquecer de remover a linha abaixo
+      // FIXME: Não esquecer de comentar a linha abaixo 
       //deleteAll();
-      //persistDistribuicoes(distribuicoes);
    });
 }
 
@@ -64,21 +62,15 @@ function obterLogon(line) {
    return line.slice(lpadLogon).trim();
 }
 
-function persistDistribuicoes(distribuicoes) {
-   distribuicoes.forEach(function (distribuicao) {
-      console.log('Salvando a distribuição:');
-      console.log(distribuicao);
-      save(distribuicao);
-   });
-}
-
 function save(distribuicao) {
    var new_distribuicao = new Distribuicao(distribuicao);
-   new_distribuicao.save(function (err, msg) {
+   new_distribuicao.save(function (err, saved) {
       if (err) {
-         console.log(err);
+         console.log(err.errmsg);
+      } else {
+         console.log(saved);
+         console.log('Distribuição salva com sucesso\n');
       }
-      console.log('Distribuição salva com sucesso');
    });
 }
 
@@ -86,8 +78,9 @@ function deleteAll() {
    Distribuicao.deleteMany({}, function (err, msg) {
       if (err) {
          console.log(err);
+      } else {
+         console.log('Coleção deletada com sucesso');
       }
-      console.log('Coleção deletada com sucesso');
    });
 }
 
@@ -96,17 +89,18 @@ exports.hello = function (req, res) {
    Distribuicao.find({}, function (err, msg) {
       if (err) {
          res.send(err);
+      } else {
+         res.send('Hello world!');
       }
-      res.send('Hello world!');
    });
 };
 exports.list_all_distribuicao = function (req, res) {
    Distribuicao.find({}, function (err, msg) {
       if (err) {
          res.send(err);
+      } else {
+         res.render('data', {dados: msg});
       }
-      var retorno = {dados: msg};
-      res.render('data', retorno);
    });
 };
 
@@ -115,8 +109,9 @@ exports.create_a_distribuicao = function (req, res) {
    new_distribuicao.save(function (err, msg) {
       if (err) {
          res.send(err);
+      } else {
+         res.json(msg);
       }
-      res.json(msg);
    });
 };
 
@@ -124,8 +119,9 @@ exports.read_a_distribuicao = function (req, res) {
    Distribuicao.findById(req.params.msgId, function (err, msg) {
       if (err) {
          res.send(err);
+      } else {
+         res.json(msg);
       }
-      res.json(msg);
    });
 };
 
@@ -133,8 +129,9 @@ exports.update_a_distribuicao = function (req, res) {
    Distribuicao.findOneAndUpdate({ _id: req.params.msgId }, req.body, { new: true }, function (err, msg) {
       if (err) {
          res.send(err);
+      } else {
+         res.json(msg);
       }
-      res.json(msg);
    });
 };
 
@@ -144,7 +141,8 @@ exports.delete_a_distribuicao = function (req, res) {
    }, function (err, msg) {
       if (err) {
          res.send(err);
+      } else {
+         res.json({ message: 'Distribuicao deletada com sucesso' });
       }
-      res.json({ message: 'Distribuicao deletada com sucesso' });
    });
 };

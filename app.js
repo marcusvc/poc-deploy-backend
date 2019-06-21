@@ -20,8 +20,8 @@ mongoose.connect(uri, {useNewUrlParser: true}, function(err){
 });
 
 var ftp = new PromiseFtp();
-ftp.connect({host: "localhost", user: "marcus", password: "lyjum7"})
-//ftp.connect({host: "10.3.9.1", user: "dg07876", password: "rostso01"})
+//ftp.connect({host: "localhost", user: "marcus", password: "lyjum7"})
+ftp.connect({host: "10.3.9.1", user: "dg07876", password: "rostso01"})
     .then(function (serverMessage) {
         console.log('Server message: '+serverMessage);
         return ftp.ascii();
@@ -36,8 +36,8 @@ ftp.connect({host: "localhost", user: "marcus", password: "lyjum7"})
     })
     .then(function (pwdResult) {
           console.log('Diretório atual: ' + pwdResult);
-          //return ftp.get('S1110.DG07876.TESTE04');
-          return ftp.get('/srv/ftp/readme.local-copy.txt');
+          return ftp.get('S1110.DG07876.TESTE04');
+          //return ftp.get('/srv/ftp/readme.local-copy.txt');
     })
     .then(function (getResultStream) {
         return new Promise(function (resolve, reject) {
