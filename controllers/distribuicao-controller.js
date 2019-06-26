@@ -1,10 +1,13 @@
 'use strict';
 
 const mongoose = require('mongoose');
-Distribuicao = mongoose.model('Distribuicao');
-
 const readline = require('readline');
-const controller = require('./distribuicao-controller');
+const winston = require('winston');
+const logConfiguration = require('../config/config-log')(module);
+
+const logger = winston.createLogger(logConfiguration);
+
+Distribuicao = mongoose.model('Distribuicao');
 const lpad = 2;
 const lpadLogon = 12;
 const nameLength = 10;
@@ -29,15 +32,15 @@ exports.parseDistribuicao = function (stream) {
       if (readNext && (line.includes('*****') || line.includes('Number of'))) {
          readNext = false;
       } else if (readNext) {
-         var distribuicao = parseLineIntoDistribuicao(line, logon);
-         save(distribuicao);
+         //var distribuicao = parseLineIntoDistribuicao(line, logon);
+         //save(distribuicao);
       } else if (!readNext && line.includes('--------')) {
          readNext = true;
       } else if (!readNext && line.includes('NEXT LOGON')) {
          logon = obterLogon(line);
       }
    }).on('close', function () {
-      console.log('Stream closed...');
+      logger.info('Stream closed...');
       // FIXME: Não esquecer de comentar a linha abaixo 
       //deleteAll();
    });
@@ -66,10 +69,10 @@ function save(distribuicao) {
    var new_distribuicao = new Distribuicao(distribuicao);
    new_distribuicao.save(function (err, saved) {
       if (err) {
-         console.log(err.errmsg);
+         logger.error(err.errmsg);
       } else {
-         console.log(saved);
-         console.log('Distribuição salva com sucesso\n');
+         logger.info(saved);
+         logger.info('Distribuição salva com sucesso\n');
       }
    });
 }
@@ -77,9 +80,9 @@ function save(distribuicao) {
 function deleteAll() {
    Distribuicao.deleteMany({}, function (err, msg) {
       if (err) {
-         console.log(err);
+         logger.error(err);
       } else {
-         console.log('Coleção deletada com sucesso');
+         logger.info('Coleção deletada com sucesso');
       }
    });
 }
@@ -108,6 +111,10 @@ exports.create_a_distribuicao = function (req, res) {
    var new_distribuicao = new Distribuicao(req.body);
    new_distribuicao.save(function (err, msg) {
       if (err) {
+         logger.error('Input:');
+         logger.error(req);
+         logger.error('Erro:');
+         logger.error(err);
          res.send(err);
       } else {
          res.json(msg);

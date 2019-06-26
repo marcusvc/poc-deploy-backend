@@ -26,7 +26,7 @@ var distribuicaoSchema = new Schema({
       type: Date,
       default: Date.now
    }
-}, { versionKey: false });
+}, { versionKey: false, collection: 'distribuicao' });
 
 distribuicaoSchema.index({logon: 1, nome: 1, tipo: 1, data: 1, hora: 1}, {unique: true})
 
